@@ -6,7 +6,9 @@
 
         <div class="d-flex justify-content-between align-items-center mb-2">
             <h5 class="mb-0">Data Participant</h5>
-
+            <button class="btn btn-success" id="btnCheckoutSelected" title="Checkout semua peserta yang dicentang">
+                <i class="fas fa-shopping-cart"></i> Checkout Terpilih
+            </button>
         </div>
 
 
@@ -14,9 +16,10 @@
 
     <div class="card-body">
 
-        <table id="ParticipantMGRTable" class="table table-bordered table-hover">
+        <table id="ParticipantMGRTableCO" class="table table-bordered table-hover">
             <thead>
                 <tr>
+                    <th class="no-sort"><input type="checkbox" id="checkAll" /></th>
                     <th>No invoice</th>
                     <th>FristName</th>
                     <th>race category</th>
@@ -26,7 +29,7 @@
                     <th>ID Number</th>
                     <th>event name</th>
                     <th>Status REPC</th>
-                    <th>Option</th>
+
                 </tr>
             </thead>
         </table>

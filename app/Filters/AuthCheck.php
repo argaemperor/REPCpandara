@@ -20,7 +20,7 @@ class AuthCheck implements FilterInterface
         if ($arguments) {
             $userLevel = $session->get('level');
             if (! in_array($userLevel, $arguments)) {
-                return redirect()->to('/login')->with('error', 'Anda tidak memiliki akses ke halaman ini');
+                return redirect()->to('/logout')->with('error', 'Anda tidak memiliki akses ke halaman ini');
             }
         }
     }

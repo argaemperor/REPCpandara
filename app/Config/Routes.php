@@ -32,7 +32,14 @@ $routes->post('participant/update-field', 'Participant::updateField', ['filter' 
 //Event Manager
 $routes->get('EventMgr/Dashboard', 'EventManager::Dashboard', ['filter' => 'auth:2']);
 $routes->get('EventMgr/participant', 'EventManager::participantmgr', ['filter' => 'auth:2']);
-$routes->get('EventManager/ajaxList', 'EventManager::ajaxListparticipantmgr');
+$routes->get('EventMgr/participantCO', 'EventManager::participantmgrCheckout', ['filter' => 'auth:2']);
+$routes->get('EventManager/ajaxList', 'EventManager::ajaxListparticipantmgr', ['filter' => 'auth:2']);
+$routes->get('EventManager/ajaxListChecout', 'EventManager::ajaxListparticipantmgrCheckOut', ['filter' => 'auth:2']);
+$routes->post('EventManager/checkoutMultiple', 'EventManager::checkoutMultiple', ['filter' => 'auth:2']);
+$routes->match(['get', 'post'], 'EventManager/checkoutScan', 'EventManager::checkoutScan'); // form tampilan scan
+$routes->post('EventManager/processCheckoutScan', 'EventManager::processCheckoutScan'); // proses final
+
+
 //$routes->get('EventMgr/ajaxList', 'EventManager::ajaxListparticipantmgr', ['filter' => 'auth:2']);
 
 

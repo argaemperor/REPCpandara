@@ -10,6 +10,17 @@
   <link rel="stylesheet" href="<?= base_url('assets/dist/css/adminlte.min.css') ?>">
   <link rel="stylesheet" href="<?= base_url('assets/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css') ?>">
   <link rel="stylesheet" href="<?= base_url('assets/plugins/datatables-buttons/css/buttons.bootstrap4.min.css') ?>">
+  <style>
+    th.no-sort::after,
+    th.no-sort::before {
+      display: none !important;
+      content: none !important;
+    }
+
+    th.no-sort {
+      pointer-events: none;
+    }
+  </style>
 </head>
 
 <body class="hold-transition sidebar-mini">
@@ -88,6 +99,12 @@
                 <a href="<?= base_url('EventMgr/Dashboard') ?>" class="nav-link <?= uri_string() == 'EventMgr/Dashboard' ? 'active' : '' ?>">
                   <i class="nav-icon fas fa-tachometer-alt"></i>
                   <p>Dashboard</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="<?= base_url('EventMgr/participantCO') ?>" class="nav-link <?= uri_string() == 'checkoutScan' ? 'active' : '' ?>">
+                  <i class="nav-icon fas fa-shopping-cart"></i>
+                  <p>Checkout Peserta </p>
                 </a>
               </li>
               <li class="nav-item">
