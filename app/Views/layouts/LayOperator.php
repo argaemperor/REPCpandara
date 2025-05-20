@@ -21,7 +21,8 @@
   <link rel="stylesheet" href="<?= base_url('assets/plugins/datatables-fixedheader/css/fixedHeader.bootstrap4.min.css') ?>">
 
   <!-- Optional: Custom style (jika kamu punya) -->
-  <link rel="stylesheet" href="<?= base_url('assets/css/custom.css') ?>">
+
+  <link rel="stylesheet" href="<?= base_url('assets/css/sweetalert2.min.css') ?>">
 </head>
 
 
@@ -174,6 +175,7 @@
   <script src="<?= base_url('assets/plugins/jszip/jszip.min.js') ?>"></script>
   <script src="<?= base_url('assets/plugins/pdfmake/pdfmake.min.js') ?>"></script>
   <script src="<?= base_url('assets/plugins/pdfmake/vfs_fonts.js') ?>"></script>
+  <script src="<?= base_url('assets/js/sweetalert2.all.min.js') ?>"></script>
 
   <script>
     const base_url = "<?= base_url() ?>";

@@ -3,7 +3,10 @@
 namespace App\Controllers;
 
 use App\Models\UserModel;
+use App\Models\MasterEventModel;
+use App\Models\UserEventModel;
 use CodeIgniter\Controller;
+
 
 class EventManager extends BaseController
 {
@@ -21,6 +24,147 @@ class EventManager extends BaseController
     public function participantmgrCheckout()
     {
         return view('EventMgr/list_participanCheckOut', ['title' => 'checkout']);
+    }
+    public function Event()
+    {
+
+        return view('EventMgr/EventMasterMgr', ['title' => 'EventMaster']);
+    }
+
+    public function MasterUserMgr()
+    {
+
+        return view('EventMgr/ListOprator', ['title' => 'UserMaster']);
+    }
+
+    public function ajaxMasterUserListmgr()
+    {
+        $request = service('request');
+        $db = db_connect();
+        $builder = $db->table('users')
+            ->where('Level', 3)
+            ->where('deleted_at', null);
+
+        $draw = $request->getGet('draw');
+        $start = $request->getGet('start');
+        $length = $request->getGet('length');
+        $searchValue = $request->getGet('search')['value'];
+
+        if ($searchValue) {
+            $builder->groupStart()
+                ->like('name', $searchValue)
+                ->orLike('email', $searchValue)
+                ->orLike('Level', $searchValue)
+                ->groupEnd();
+        }
+
+        $totalRecords = $builder->countAllResults(false);
+        $builder->limit($length, $start);
+        $query = $builder->get();
+
+        $data = [];
+        $no = $start + 1;
+        foreach ($query->getResultArray() as $row) {
+            $data[] = [
+                'no' => $no++,
+                'id' => $row['id'],
+                'name' => esc($row['name']),
+                'email' => esc($row['email']),
+                'phone' => esc($row['phone']),
+                'address' => esc($row['address']),
+                'Level' => esc($row['Level']),
+                'created_at' => esc($row['created_at']),
+                'updated_at' => esc($row['updated_at'])
+            ];
+        }
+
+        return $this->response->setJSON([
+            'draw' => intval($draw),
+            'recordsTotal' => $totalRecords,
+            'recordsFiltered' => $totalRecords,
+            'data' => $data
+        ]);
+    }
+
+    public function ajaxEventListManager()
+    {
+        try {
+            $model = new MasterEventModel();
+            $events = $model->orderBy('eventId', 'DESC')->findAll();
+
+            $data = [];
+            $no = 1;
+            foreach ($events as $event) {
+                $data[] = [
+                    'no'          => $no++,
+                    'eventId'     => $event['eventId'],
+                    'eventName'   => $event['eventName'],
+                    'eventYears'  => $event['eventYears'],
+                    'eventActive' => $event['eventActive'],
+                    'created_at'  => date('d-m-Y', strtotime($event['created_at']))
+                ];
+            }
+
+            return $this->response->setJSON(['data' => $data]);
+        } catch (\Throwable $e) {
+            return $this->response->setStatusCode(500)->setJSON([
+                'error' => true,
+                'message' => $e->getMessage()
+            ]);
+        }
+    }
+
+
+
+
+    public function toggleEventStatusmgr($id)
+    {
+        $model = new MasterEventModel();
+        $event = $model->find($id);
+
+        if ($event) {
+            $newStatus = $event['eventActive'] == 1 ? 0 : 1;
+            $model->update($id, ['eventActive' => $newStatus]);
+            return $this->response->setJSON(['status' => true, 'message' => 'Status berhasil diubah.']);
+        }
+
+        return $this->response->setJSON(['status' => false, 'message' => 'Event tidak ditemukan.']);
+    }
+
+    public function saveEvent()
+    {
+        $model = new MasterEventModel();
+        $data = [
+            'eventName'    => $this->request->getPost('eventName'),
+            'eventYears'   => $this->request->getPost('eventYears'),
+            'eventActive'  => $this->request->getPost('eventActive'),
+        ];
+        $model->insert($data);
+        return redirect()->to('EventMgr/Event')->with('success', 'Event berhasil ditambahkan.');
+    }
+
+    public function updateEventmgr()
+    {
+        $model = new MasterEventModel();
+        $id = $this->request->getPost('eventId');
+
+        $data = [
+            'eventName' => $this->request->getPost('eventName'),
+            'eventYears' => $this->request->getPost('eventYears'),
+            'eventActive' => $this->request->getPost('eventActive')
+        ];
+
+        $model->update($id, $data);
+
+        return $this->response->setJSON(['status' => true, 'message' => 'Event berhasil diperbarui.']);
+    }
+
+    public function deleteMgr($id)
+    {
+        $model = new MasterEventModel();
+        $model->delete($id);
+
+        return $this->response->setJSON(['status' => true, 'message' => 'Event berhasil dihapus.']);
     }
 
     public function ajaxListparticipantmgrCheckOut()
@@ -334,6 +478,6 @@ class EventManager extends BaseController
             }
         }
 
-        return redirect()->to('EventMgr/participant')->with('message', 'Checkout berhasil dan data disimpan.');
+        return redirect()->to('EventMgr/participantCO')->with('message', 'Checkout berhasil dan data disimpan.');
     }
 }

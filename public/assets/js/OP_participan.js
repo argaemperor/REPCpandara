@@ -52,7 +52,7 @@ $(document).ready(function () {
             const isSelesai =
               row.status_repc === 'Done' && row.processed_End !== null;
             const isSedangProses =
-              row.processed_at !== null && row.processed_End === null;
+              row.processed_at !== null && row.status_repc === 'Proses';
 
             if (isSelesai) {
               return `<span class="badge bg-success">Selesai</span>`;

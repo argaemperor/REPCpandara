@@ -138,12 +138,6 @@ class Operator extends BaseController
         return redirect()->to('/');
     }
 
-
-
-
-
-
-
     public function searchParticipant()
     {
         return view('operator/SearchBarcode', ['title' => 'search Participant']);
@@ -177,6 +171,7 @@ class Operator extends BaseController
 
         $model->update($id, [
             'processed_at' => date('Y-m-d H:i:s'),
+            'status_repc' => 'Proses',
             'processed_by' => session('user_id') // jika belum terset di awal
         ]);
 
@@ -228,7 +223,8 @@ class Operator extends BaseController
 
         return $this->response->setJSON([
             'status' => true,
-            'message' => 'Check out berhasil!'
+            'message' => 'Check out berhasil!',
+            'redirect_url' => base_url('Operator/search-participant')
         ]);
     }
 }

@@ -75,18 +75,34 @@ $(document).ready(function () {
   }
 
   // DataTable - Participant Check out
-  if ($('#ParticipantMGRTableCO').length) {
-    $('#ParticipantMGRTableCO').DataTable({
-      ...tableOptions,
+  $(document).ready(function () {
+    const selectedIds = new Set(); // Menyimpan ID peserta terpilih
+
+    // Inisialisasi DataTable untuk Checkout
+    const tableCheckout = $('#ParticipantMGRTableCO').DataTable({
+      processing: true,
+      serverSide: true,
       ajax: base_url + 'EventManager/ajaxListChecout',
+      language: {
+        search: 'Cari:',
+        lengthMenu: 'Tampilkan _MENU_ data',
+        zeroRecords: 'Tidak ditemukan data',
+        info: 'Menampilkan _START_ - _END_ dari _TOTAL_ data',
+        paginate: {
+          first: 'Pertama',
+          last: 'Terakhir',
+          next: '›',
+          previous: '‹',
+        },
+      },
       columns: [
         {
           data: null,
           orderable: false,
           searchable: false,
-          className: 'no-sort',
           render: function (data, type, row) {
-            return `<input type="checkbox" class="participant-check" value="${row.id}">`;
+            const checked = selectedIds.has(row.id) ? 'checked' : '';
+            return `<input type="checkbox" class="participant-check" value="${row.id}" ${checked}>`;
           },
         },
         { data: 'invoice' },
@@ -99,10 +115,9 @@ $(document).ready(function () {
         { data: 'event_name', orderable: false },
         {
           data: 'status_repc',
-          render: function (data, type, row) {
+          render: function (data) {
             let badgeClass = '';
             let label = data ?? 'Unknown';
-
             switch (data) {
               case 'Pending':
                 badgeClass = 'badge badge-warning';
@@ -117,13 +132,71 @@ $(document).ready(function () {
                 badgeClass = 'badge badge-secondary';
                 label = 'Unknown';
             }
-
             return `<span class="${badgeClass}">${label}</span>`;
           },
         },
       ],
     });
-  }
+
+    // Tangani perubahan checkbox: tambah/hapus dari Set
+    $('#ParticipantMGRTableCO').on('change', '.participant-check', function () {
+      const id = parseInt($(this).val());
+      if ($(this).is(':checked')) {
+        selectedIds.add(id);
+      } else {
+        selectedIds.delete(id);
+      }
+    });
+
+    // Restore checkbox tercentang saat tabel di-draw ulang (paging, search, dll)
+    tableCheckout.on('draw', function () {
+      $('#ParticipantMGRTableCO .participant-check').each(function () {
+        const id = parseInt($(this).val());
+        $(this).prop('checked', selectedIds.has(id));
+      });
+    });
+
+    // Tombol Checkout
+    $('#btnCheckoutSelected').click(function () {
+      if (selectedIds.size === 0) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Tidak ada peserta dipilih',
+          text: 'Silakan pilih minimal satu peserta.',
+        });
+        return;
+      }
+
+      Swal.fire({
+        title: 'Konfirmasi Checkout',
+        text: 'Yakin ingin melakukan checkout untuk peserta terpilih?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, Checkout!',
+        cancelButtonText: 'Batal',
+      }).then((result) => {
+        if (result.isConfirmed) {
+          const form = $('<form>', {
+            method: 'POST',
+            action: base_url + 'EventManager/checkoutScan',
+          });
+
+          Array.from(selectedIds).forEach(function (id) {
+            form.append(
+              $('<input>', {
+                type: 'hidden',
+                name: 'ids[]',
+                value: id,
+              }),
+            );
+          });
+
+          $('body').append(form);
+          form.submit();
+        }
+      });
+    });
+  });
 
   // Panggil saat modal dibuka
   function editParticipant(data) {
@@ -195,30 +268,42 @@ $('#btnCheckoutSelected').click(function () {
   });
 
   if (selected.length === 0) {
-    alert('Pilih minimal satu peserta.');
+    Swal.fire({
+      icon: 'warning',
+      title: 'Tidak ada peserta dipilih',
+      text: 'Silakan pilih minimal satu peserta.',
+    });
     return;
   }
 
-  if (confirm('Yakin ingin melakukan checkout untuk peserta terpilih?')) {
-    // Kirim ke halaman scan via POST form
-    const form = $('<form>', {
-      method: 'POST',
-      action: base_url + 'EventManager/checkoutScan',
-    });
+  Swal.fire({
+    title: 'Konfirmasi Checkout',
+    text: 'Yakin ingin melakukan checkout untuk peserta terpilih?',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: 'Ya, Checkout!',
+    cancelButtonText: 'Batal',
+  }).then((result) => {
+    if (result.isConfirmed) {
+      const form = $('<form>', {
+        method: 'POST',
+        action: base_url + 'EventManager/checkoutScan',
+      });
 
-    selected.forEach(function (id) {
-      form.append(
-        $('<input>', {
-          type: 'hidden',
-          name: 'ids[]',
-          value: id,
-        }),
-      );
-    });
+      selected.forEach(function (id) {
+        form.append(
+          $('<input>', {
+            type: 'hidden',
+            name: 'ids[]',
+            value: id,
+          }),
+        );
+      });
 
-    $('body').append(form);
-    form.submit();
-  }
+      $('body').append(form);
+      form.submit();
+    }
+  });
 });
 
 //Cek Input bib
@@ -250,7 +335,13 @@ $(document).on('input', '.input-bib', function () {
 $('#btnKonfirmasiCheckout').click(function (e) {
   if (!validateBIBs()) {
     e.preventDefault();
-    alert('Pastikan semua BIB sudah valid sebelum checkout.');
+
+    Swal.fire({
+      icon: 'warning',
+      title: 'Checkout Ditolak',
+      text: 'Pastikan semua BIB sudah valid sebelum checkout.',
+      confirmButtonText: 'OK',
+    });
   }
 });
 
@@ -320,3 +411,254 @@ $(document).ready(function () {
   // Cek awal ketika halaman dimuat (jaga-jaga)
   checkAllValid();
 });
+// JS Untuk menapilkan List Event
+$(document).ready(function () {
+  $('#masterEventTableMgr').DataTable({
+    ajax: base_url + 'EventManager/ajaxEventList',
+    columns: [
+      {
+        data: null,
+        render: function (data, type, row, meta) {
+          return meta.row + 1;
+        },
+      },
+      { data: 'eventName' },
+      { data: 'eventYears' },
+      {
+        data: 'eventActive',
+        render: function (data) {
+          return data == 1
+            ? '<span class="badge badge-success">Aktif</span>'
+            : '<span class="badge badge-secondary">Nonaktif</span>';
+        },
+      },
+      {
+        data: null,
+        render: function (data) {
+          let btnClass = data.eventActive == 1 ? 'btn-danger' : 'btn-success';
+          let btnText = data.eventActive == 1 ? 'Nonaktifkan' : 'Aktifkan';
+          return `
+           <button class="btn btn-sm btn-info mr-1" onclick="editEvent(${data.eventId}, '${data.eventName}', '${data.eventYears}', ${data.eventActive})">Report</button>
+        <button class="btn btn-sm btn-info mr-1" onclick="editEvent(${data.eventId}, '${data.eventName}', '${data.eventYears}', ${data.eventActive})">Edit</button>
+        <button class="btn btn-sm ${btnClass} mr-1" onclick="toggleEventStatus(${data.eventId})">${btnText}</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteEvent(${data.eventId})">Hapus</button>
+      `;
+        },
+      },
+    ],
+    language: {
+      search: 'Cari:',
+      lengthMenu: 'Tampilkan _MENU_ data',
+      zeroRecords: 'Tidak ditemukan data',
+      info: 'Menampilkan _START_ - _END_ dari _TOTAL_ data',
+      paginate: {
+        first: 'Pertama',
+        last: 'Terakhir',
+        next: '›',
+        previous: '‹',
+      },
+    },
+  });
+});
+// JS merubah Status Event
+function toggleEventStatus(id) {
+  Swal.fire({
+    title: 'Yakin ingin mengubah status event ini?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Ya, Ubah!',
+    cancelButtonText: 'Batal',
+  }).then((result) => {
+    if (result.isConfirmed) {
+      $.post(base_url + 'EventManager/toggle/' + id, function (res) {
+        $('#masterEventTableMgr').DataTable().ajax.reload();
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Berhasil!',
+          text: res.message,
+          timer: 2000,
+          showConfirmButton: false,
+        });
+      });
+    }
+  });
+}
+
+// Menampilkan modal edit dengan data event
+function editEvent(id, name, year, status) {
+  $('#editEventId').val(id);
+  $('#editEventName').val(name);
+  $('#editEventYears').val(year);
+  $('#editEventActive').val(status);
+  $('#modalEditEvent').modal('show');
+}
+
+// Submit form edit event
+$('#formEditEvent').on('submit', function (e) {
+  e.preventDefault();
+
+  $.post(base_url + 'EventManager/update', $(this).serialize(), function (res) {
+    $('#modalEditEvent').modal('hide');
+    $('#masterEventTableMgr').DataTable().ajax.reload();
+
+    Swal.fire({
+      icon: 'success',
+      title: 'Berhasil!',
+      text: res.message,
+      timer: 2000,
+      showConfirmButton: false,
+    });
+  });
+});
+
+// Hapus event dengan konfirmasi SweetAlert
+function deleteEvent(id) {
+  Swal.fire({
+    title: 'Yakin ingin menghapus event ini?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Ya, Hapus!',
+    cancelButtonText: 'Batal',
+  }).then((result) => {
+    if (result.isConfirmed) {
+      $.post(base_url + 'EventManager/delete/' + id, function (res) {
+        $('#masterEventTableMgr').DataTable().ajax.reload();
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Terhapus!',
+          text: res.message,
+          timer: 2000,
+          showConfirmButton: false,
+        });
+      });
+    }
+  });
+}
+
+//JS unutk List Operator
+$(document).ready(function () {
+  if ($('#OpratorTableMgr').length) {
+    $('#OpratorTableMgr').DataTable({
+      processing: true,
+      serverSide: true,
+      ajax: {
+        url: base_url + 'EventManager/ajaxMasterUserList',
+        type: 'GET',
+        error: function (xhr, error, thrown) {
+          console.error('Gagal mengambil data:', error);
+        },
+      },
+      columns: [
+        { data: 'no' },
+        { data: 'name' },
+        { data: 'email' },
+        {
+          data: 'Level',
+          render: function (data) {
+            switch (parseInt(data)) {
+              case 1:
+                return '<span class="badge badge-success">Administrator</span>';
+              case 2:
+                return '<span class="badge badge-primary">Event Manager</span>';
+              case 3:
+                return '<span class="badge badge-warning">Registration Operator</span>';
+              case 4:
+                return '<span class="badge badge-info">Guest / Viewer</span>';
+              default:
+                return '<span class="badge badge-secondary">Unknown</span>';
+            }
+          },
+        },
+        { data: 'phone' },
+        { data: 'address' },
+        {
+          data: null,
+          render: function (data) {
+            return `
+              <button class="btn btn-sm btn-warning btn-edit-user"
+                data-id="${data.id}"
+                data-name="${data.name}"
+                data-email="${data.email}"
+                data-phone="${data.phone}"
+                data-address="${data.address}"
+                data-username="${data.username}"
+                data-level="${data.level}"
+                data-toggle="modal" data-target="#modalEditUser">
+                Edit
+              </button>
+              <button class="btn btn-sm btn-danger" onclick="deleteUser(${data.id})">Hapus</button>
+            `;
+          },
+          orderable: false,
+          searchable: false,
+        },
+      ],
+      language: {
+        search: 'Cari:',
+        lengthMenu: 'Tampilkan _MENU_ data',
+        zeroRecords: 'Tidak ditemukan data',
+        info: 'Menampilkan _START_ - _END_ dari _TOTAL_ data',
+        paginate: {
+          first: 'Pertama',
+          last: 'Terakhir',
+          next: '›',
+          previous: '‹',
+        },
+      },
+    });
+  }
+
+  //  Modal Edit Handler
+  $(document).on('click', '.btn-edit-user', function () {
+    $('#edit-id').val($(this).data('id'));
+    $('#edit-name').val($(this).data('name'));
+    $('#edit-email').val($(this).data('email'));
+    $('#edit-phone').val($(this).data('phone'));
+    $('#edit-address').val($(this).data('address'));
+    $('#edit-username').val($(this).data('username'));
+    $('#edit-level').val($(this).data('level'));
+    $('#modalEditUser').modal('show');
+  });
+});
+
+//Deelete user
+
+function deleteUser(id) {
+  Swal.fire({
+    title: 'Yakin ingin menghapus user ini?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Ya, Hapus!',
+    cancelButtonText: 'Batal',
+  }).then((result) => {
+    if (result.isConfirmed) {
+      $.post(base_url + 'admin/delete-user/' + id, function (res) {
+        if (res.status) {
+          $('#userTable').DataTable().ajax.reload();
+
+          Swal.fire({
+            icon: 'success',
+            title: 'Berhasil!',
+            text: res.message,
+            timer: 2000,
+            showConfirmButton: false,
+          });
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Gagal!',
+            text: res.message || 'Gagal menghapus user.',
+          });
+        }
+      }).fail(function () {
+        Swal.fire({
+          icon: 'error',
+          title: 'Server Error!',
+          text: 'Terjadi kesalahan pada server.',
+        });
+      });
+    }
+  });
+}

@@ -28,7 +28,7 @@
     </div>
 </div>
 
-<!-- Modal Check Out -->
+
 <!-- Modal Check Out -->
 <div class="modal fade" id="modalCheckout" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-lg" role="document"> <!-- Ukuran diperbesar -->

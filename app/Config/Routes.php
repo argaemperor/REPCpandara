@@ -38,7 +38,17 @@ $routes->get('EventManager/ajaxListChecout', 'EventManager::ajaxListparticipantm
 $routes->post('EventManager/checkoutMultiple', 'EventManager::checkoutMultiple', ['filter' => 'auth:2']);
 $routes->match(['get', 'post'], 'EventManager/checkoutScan', 'EventManager::checkoutScan'); // form tampilan scan
 $routes->post('EventManager/processCheckoutScan', 'EventManager::processCheckoutScan'); // proses final
-
+$routes->get('EventMgr/Event', 'EventManager::Event', ['filter' => 'auth:2']);
+$routes->get('EventManager/ajaxEventList', 'EventManager::ajaxEventListManager', ['filter' => 'auth:2']);
+$routes->post('EventManager/saveEventMgr', 'EventManager::saveEvent', ['filter' => 'auth:2']);
+$routes->post('EventManager/toggle/(:num)', 'EventManager::toggleEventStatusmgr/$1', ['filter' => 'auth:2']);
+$routes->post('EventManager/update', 'EventManager::updateEventmgr', ['filter' => 'auth:2']);
+$routes->post('EventManager/delete/(:num)', 'EventManager::deleteMgr/$1', ['filter' => 'auth:2']);
+$routes->get('EventManager/users', 'EventManager::MasterUserMgr', ['filter' => 'auth:2']);
+//$routes->post('/users/save', 'Admin::MasterUsersave', ['filter' => 'auth:1']);
+$routes->get('EventManager/ajaxMasterUserList', 'EventManager::ajaxMasterUserListmgr', ['filter' => 'auth:2']);
+$routes->post('EventManager/update', 'EventManager::updateUserMgr', ['filter' => 'auth:2']);
+$routes->post('EventManager/delete/(:num)', 'EventManager::deleteUserMgr/$1', ['filter' => 'auth:2']);
 
 //$routes->get('EventMgr/ajaxList', 'EventManager::ajaxListparticipantmgr', ['filter' => 'auth:2']);
 
@@ -59,6 +69,8 @@ $routes->post('login', 'Auth::doLogin');
 $routes->get('logout', 'Auth::logout');
 $routes->get('register', 'Auth::showRegister');
 $routes->post('register', 'Auth::register');
+$routes->post('check-id', 'Auth::checkID');
+
 
 
 // Event selection (public access, perhaps at login)

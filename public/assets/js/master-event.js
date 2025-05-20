@@ -47,13 +47,27 @@ $(document).ready(function () {
 });
 
 function toggleEventStatus(id) {
-  console.log('Klik toggle ID:', id);
-  if (confirm('Apakah kamu yakin ingin mengganti status event ini?')) {
-    $.post(base_url + 'admin/event/toggle/' + id, function (res) {
-      $('#masterEventTable').DataTable().ajax.reload();
-      alert(res.message);
-    });
-  }
+  Swal.fire({
+    title: 'Yakin ingin mengubah status event ini?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Ya, Ubah!',
+    cancelButtonText: 'Batal',
+  }).then((result) => {
+    if (result.isConfirmed) {
+      $.post(base_url + 'admin/event/toggle/' + id, function (res) {
+        $('#masterEventTable').DataTable().ajax.reload();
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Berhasil!',
+          text: res.message,
+          timer: 2000,
+          showConfirmButton: false,
+        });
+      });
+    }
+  });
 }
 
 function editEvent(id, name, year, status) {

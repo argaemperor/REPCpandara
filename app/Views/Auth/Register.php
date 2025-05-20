@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="<?= base_url('assets/plugins/fontawesome-free/css/all.min.css') ?>">
     <link rel="stylesheet" href="<?= base_url('assets/plugins/icheck-bootstrap/icheck-bootstrap.min.css') ?>">
     <link rel="stylesheet" href="<?= base_url('assets/dist/css/adminlte.min.css') ?>">
+    <link rel="stylesheet" href="<?= base_url('assets/css/sweetalert2.min.css') ?>">
 
     <style>
         .register-box {
@@ -137,6 +138,7 @@
     <script src="<?= base_url('assets/plugins/jquery/jquery.min.js') ?>"></script>
     <script src="<?= base_url('assets/plugins/bootstrap/js/bootstrap.bundle.min.js') ?>"></script>
     <script src="<?= base_url('assets/dist/js/adminlte.min.js') ?>"></script>
+    <script src="<?= base_url('assets/js/sweetalert2.all.min.js') ?>"></script>
 
     <script>
         // Validasi JS
@@ -152,6 +154,38 @@
                 alert("Usia minimal 10 tahun.");
                 e.preventDefault();
             }
+        });
+        $(document).ready(function() {
+            $('[name="id_number"]').on('blur', function() {
+                let idNumber = $(this).val();
+
+                if (idNumber.length >= 5) {
+                    $.ajax({
+                        url: "<?= base_url('check-id') ?>",
+                        method: "POST",
+                        data: {
+                            id_number: idNumber
+                        },
+                        success: function(res) {
+                            if (res.status === 'found') {
+                                $('[name="name"]').val(res.data.name);
+                                $('[name="email"]').val(res.data.email);
+                                $('[name="phone"]').val(res.data.phone);
+                                $('[name="address"]').val(res.data.address);
+                                $('[name="usia"]').val(res.data.usia);
+
+                                Swal.fire({
+                                    icon: 'info',
+                                    title: 'Data Ditemukan',
+                                    text: 'Data berhasil diisi otomatis dari NIK yang sudah pernah terdaftar.',
+                                    timer: 2500,
+                                    showConfirmButton: false
+                                });
+                            }
+                        }
+                    });
+                }
+            });
         });
     </script>
 </body>

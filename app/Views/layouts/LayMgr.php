@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="<?= base_url('assets/dist/css/adminlte.min.css') ?>">
   <link rel="stylesheet" href="<?= base_url('assets/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css') ?>">
   <link rel="stylesheet" href="<?= base_url('assets/plugins/datatables-buttons/css/buttons.bootstrap4.min.css') ?>">
+  <link rel="stylesheet" href="<?= base_url('assets/css/sweetalert2.min.css') ?>">
   <style>
     th.no-sort::after,
     th.no-sort::before {
@@ -108,7 +109,7 @@
                 </a>
               </li>
               <li class="nav-item">
-                <a href="<?= base_url('EventMgr/participant') ?>" class="nav-link <?= uri_string() == 'participants' ? 'active' : '' ?>">
+                <a href="<?= base_url('EventMgr/participant') ?>" class="nav-link <?= uri_string() == 'EventMgr/participant' ? 'active' : '' ?>">
                   <i class="nav-icon fas fa-users"></i>
                   <p>Participant</p>
                 </a>
@@ -126,13 +127,13 @@
                 </a>
               </li>
               <li class="nav-item">
-                <a href="<?= base_url('Admin/Event') ?>" class="nav-link <?= uri_string() == 'Admin/Event' ? 'active' : '' ?>">
+                <a href="<?= base_url('EventMgr/Event') ?>" class="nav-link <?= uri_string() == 'EventMgr/Event' ? 'active' : '' ?>">
                   <i class="nav-icon fas fa-calendar-alt"></i>
                   <p>Event List</p>
                 </a>
               </li>
               <li class="nav-item">
-                <a href="<?= base_url('users') ?>" class="nav-link <?= uri_string() == 'users' ? 'active' : '' ?>">
+                <a href="<?= base_url('EventManager/users') ?>" class="nav-link <?= uri_string() == 'users' ? 'active' : '' ?>">
                   <i class="nav-icon fas fa-user-cog"></i>
                   <p>Operator List</p>
                 </a>
@@ -164,6 +165,8 @@
   <script src="<?= base_url('assets/dist/js/adminlte.min.js') ?>"></script>
   <script src="<?= base_url('assets/plugins/datatables/jquery.dataTables.min.js') ?>"></script>
   <script src="<?= base_url('assets/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js') ?>"></script>
+  <script src="<?= base_url('assets/js/sweetalert2.all.min.js') ?>"></script>
+
 
   <script>
     const base_url = "<?= base_url() ?>";

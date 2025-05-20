@@ -33,7 +33,7 @@ $('#search-form').on('submit', function (e) {
           row.status_repc === 'Done' && row.processed_End !== null;
         const isSedangProses =
           row.processed_at !== null &&
-          row.processed_End === null &&
+          row.status_repc === 'Proses' &&
           parseInt(row.processed_by_id) !== parseInt(session_user_id);
 
         let statusText = '';
@@ -165,27 +165,50 @@ $('#btnConfirmCheckout').on('click', function () {
   const namaWakil = $('#namaWakil').val().trim();
   const telpWakil = $('#telpWakil').val().trim();
 
+  // ✅ Validasi BIB
   if (inputBib !== expectedBib) {
     $('#confirmBib').addClass('is-invalid');
     $('#bibMismatch').removeClass('d-none');
     return;
   }
 
-  $.post(
-    base_url + 'operator/checkout',
-    {
-      id,
-      wakil: pengambilan,
-      nama_pengambil: namaWakil,
-      telp_pengambil: telpWakil,
-      bib_scan: inputBib,
-    },
-    function (res) {
-      alert(res.message);
+  // ✅ Bersihkan validasi jika cocok
+  $('#confirmBib').removeClass('is-invalid');
+  $('#bibMismatch').addClass('d-none');
+
+  // ✅ Kirim AJAX POST
+  $.post(base_url + 'operator/checkout', {
+    id,
+    wakil: pengambilan,
+    nama_pengambil: namaWakil,
+    telp_pengambil: telpWakil,
+    bib_scan: inputBib,
+  })
+    .done(function (res) {
       if (res.status) {
-        $('#modalCheckout').modal('hide');
-        $('#keyword').val('').focus();
+        Swal.fire({
+          icon: 'success',
+          title: 'Berhasil!',
+          text: res.message,
+          timer: 2000,
+          showConfirmButton: false,
+        }).then(() => {
+          window.location.href =
+            res.redirect_url || base_url + 'Operator/search-participant';
+        });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Gagal',
+          text: res.message,
+        });
       }
-    },
-  );
+    })
+    .fail(function () {
+      Swal.fire({
+        icon: 'error',
+        title: 'Server Error',
+        text: 'Terjadi kesalahan pada server.',
+      });
+    });
 });
